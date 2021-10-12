@@ -1,0 +1,44 @@
+quiz_cards:
+    // id: 
+    chapter: 
+    summary: 
+    pdf:
+    quizname:
+    no_of_questions:
+
+quizzes
+    quizname:
+    questions:
+        1:
+        question:
+        distractors:
+            1:
+                distractor:
+                meaning:
+            2:
+                distractor:
+                meaning:
+            3:
+                distractor:
+                meaning:
+            4:
+                distractor:
+                meaning:
+        correct_answer:
+            distractor_number:
+            distractor:
+
+student:
+    name:
+    password:
+    id:
+    results:
+        quizzes:
+            quizname:
+            score:
+
+            quizname:
+            score:
+
+            quizname:
+            score:

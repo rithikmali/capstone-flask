@@ -1,6 +1,6 @@
-import requests
 
 def get_summary_deepai(text):
+    import requests
     r = requests.post(
         "https://api.deepai.org/api/summarization",
         data={
@@ -62,3 +62,10 @@ def get_summary_t5(text):
 
     summarized_text = summarizer(text,summary_model,summary_tokenizer)
     return summarized_text
+
+if __name__ == '__main__':
+    text = '''The incident ray, the normal at the point of incidence and the reflected are all in this plane. Bob greene: when you bend the paper you create a plane
+different from the plane in which incident and normal lie - this indicates that incident, normal and reflection all lie in the same plane, he says.
+It's another law of reflection.'''
+    st = get_summary_t5(text)
+    print(st)
