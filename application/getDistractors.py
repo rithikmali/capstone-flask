@@ -107,7 +107,7 @@ def get_bow(word):
         
         return [w.lower_ for w in by_similarity[:topn+1] if w.lower_ != word.lower_]
 
-    r = most_similar("refraction", topn=3)
+    r = most_similar(word, topn=3)
     if r:
         return r[0]
     return None

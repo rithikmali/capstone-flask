@@ -1,4 +1,4 @@
-from application.app import app,db
+from application.app import app,db,executor
 from flask import Flask, request
 from pdfminer.high_level import extract_text
 import json
@@ -32,6 +32,10 @@ def parse_json(data):
     return json.loads(json_util.dumps(data))
 
 @app.route("/makequiz")
+def makequizjob():
+    executor.submit(make_quiz)
+    return 'Scheduled a job'
+
 def make_quiz():
     # if request.method == 'POST':
     #     f = request.files['file']

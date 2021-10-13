@@ -20,3 +20,4 @@ summa
 git+https://github.com/boudinfl/pke.git
 flashtext
 inflect
+flask-executor
