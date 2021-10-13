@@ -46,10 +46,10 @@ def get_summary_t5(text):
                                         attention_mask=attention_mask,
                                         early_stopping=True,
                                         num_beams=3,
-                                        num_return_sequences=1,
-                                        no_repeat_ngram_size=2,
+                                        num_return_sequences=2,
+                                        no_repeat_ngram_size=0,
                                         min_length = 75,
-                                        max_length=300)
+                                        max_length=1000)
 
 
         dec = [tokenizer.decode(ids,skip_special_tokens=True) for ids in outs]
@@ -63,9 +63,21 @@ def get_summary_t5(text):
     summarized_text = summarizer(text,summary_model,summary_tokenizer)
     return summarized_text
 
+def get_summary_summa(text,ratio=0.2):
+    from summa.summarizer import summarize
+    import benepar
+    import spacy
+    benepar_parser = benepar.Parser("benepar_en3")
+    nlp = spacy.load('en_core_web_lg')
+    summary =  summarize(text, ratio=ratio)
+    return summary
+
 if __name__ == '__main__':
-    text = '''The incident ray, the normal at the point of incidence and the reflected are all in this plane. Bob greene: when you bend the paper you create a plane
-different from the plane in which incident and normal lie - this indicates that incident, normal and reflection all lie in the same plane, he says.
-It's another law of reflection.'''
+#     text = '''The incident ray, the normal at the point of incidence and the reflected are all in this plane. Bob greene: when you bend the paper you create a plane
+# different from the plane in which incident and normal lie - this indicates that incident, normal and reflection all lie in the same plane, he says.
+# It's another law of reflection.'''
+    a = open('a.txt','r')
+    text = a.read()
+    a.close()
     st = get_summary_t5(text)
     print(st)

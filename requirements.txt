@@ -12,3 +12,11 @@ pdfminer.six
 gunicorn
 pydictionary
 flask-executor
+sentence_transformers
+numba
+spacy
+benepar
+summa
+git+https://github.com/boudinfl/pke.git
+flashtext
+inflect

@@ -14,5 +14,3 @@ A flask backend for my capstone project
 
 
 
-
-

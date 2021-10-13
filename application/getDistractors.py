@@ -74,4 +74,43 @@ def filtered_distractors(keyw, dl):
             filtered_dl.append(word1)
     filtered_dl.remove(keyw)
     return filtered_dl
+
+def get_bow(word):
+    import spacy
+    import numpy as np
+    from numba import jit
+    nlp = spacy.load("en_core_web_lg")
+
+    @jit(nopython=True)
+    def cosine_similarity_numba(u:np.ndarray, v:np.ndarray):
+        assert(u.shape[0] == v.shape[0])
+        uv = 0
+        uu = 0
+        vv = 0
+        for i in range(u.shape[0]):
+            uv += u[i]*v[i]
+            uu += u[i]*u[i]
+            vv += v[i]*v[i]
+        cos_theta = 1
+        if uu != 0 and vv != 0:
+            cos_theta = uv/np.sqrt(uu*vv)
+        return cos_theta
+
+    def most_similar(word, topn=5):
+        word = nlp.vocab[str(word)]
+        queries = [
+            w for w in word.vocab 
+            if w.is_lower == word.is_lower and w.prob >= -15 and np.count_nonzero(w.vector)
+        ]
+
+        by_similarity = sorted(queries, key=lambda w: cosine_similarity_numba(w.vector, word.vector), reverse=True) 
         
+        return [w.lower_ for w in by_similarity[:topn+1] if w.lower_ != word.lower_]
+
+    r = most_similar("refraction", topn=3)
+    if r:
+        return r[0]
+    return None
+
+def get_distractors_glove(word):
+    pass
