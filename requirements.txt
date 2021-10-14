@@ -21,3 +21,6 @@ git+https://github.com/boudinfl/pke.git
 flashtext
 inflect
 flask-executor
+waitress
+random_word
+wordhoard

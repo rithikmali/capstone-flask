@@ -64,6 +64,9 @@ def make_quiz():
     keyword_sentence_mapping = get_sentences_for_keyword(keywords, summarized_text)
     print('got keyword sentence mapping')
 
+    # res = get_true_false(summarized_text)
+    # print('got true false questions')
+
     #get distractors
     keyword_distractor_list = defaultdict(list)
     for keyword in keyword_sentence_mapping:
@@ -88,8 +91,6 @@ def make_quiz():
     # print('got distractors with meanings')
 
     # Get True/False questions
-    # res = get_true_false(summarized_text)
-    # print('got true false questions')
 
     #combine everythin into a dictionary
     quiz_db_val = {'quizname': quizname, 'questions':{}}
@@ -112,8 +113,6 @@ def make_quiz():
     quiz_db_val['questions'] = questions
 
     # Add True/False questions to dictionary
-    # n_true_false = int(int(no_of_questions)*0.3)
-    # res = random.sample(res,n_true_false)
     # questions=[]
     # for i in res:
     #     question_db_val = {'question':"Answer with True/False: \n"+i[0], 'distractors':["True","False",None,None], 'correct_answer':i[1]}
@@ -121,7 +120,7 @@ def make_quiz():
     #     index += 1
     # quiz_db_val['questions'] = questions
 
-    print('got quiz db val')
+    # print('got quiz db val')
 
 
     #insert into cards db

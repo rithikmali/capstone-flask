@@ -104,13 +104,52 @@ def get_bow(word):
         ]
 
         by_similarity = sorted(queries, key=lambda w: cosine_similarity_numba(w.vector, word.vector), reverse=True) 
-        
-        return [w.lower_ for w in by_similarity[:topn+1] if w.lower_ != word.lower_]
+        # print(by_similarity)
+        return [(w.lower_,w.similarity(word)) for w in by_similarity[:topn+1] if w.lower_ != word.lower_]
 
     r = most_similar(word, topn=3)
-    if r:
-        return r[0]
-    return None
+    return r
 
-def get_distractors_glove(word):
-    pass
+def get_distractors_c(word):
+    def word2vec(word):
+        from collections import Counter
+        from math import sqrt
+
+        # count the characters in word
+        cw = Counter(word)
+        # precomputes a set of the different characters
+        sw = set(cw)
+        # precomputes the "length" of the word vector
+        lw = sqrt(sum(c*c for c in cw.values()))
+
+        # return a tuple
+        return cw, sw, lw
+
+    def cosdis(v1, v2):
+        # which characters are common to the two words?
+        common = v1[1].intersection(v2[1])
+        # by definition of cosine distance we have
+        return sum(v1[0][ch]*v2[0][ch] for ch in common)/v1[2]/v2[2]
+    
+    def distractor1(correct_answer):
+        from wordhoard import Antonyms
+        antonym = Antonyms(correct_answer)
+        va=word2vec(correct_answer)
+        antonym_results = antonym.find_antonyms()
+        sim=[]
+        #print(antonym_results)
+        for j in antonym_results:
+            vb = word2vec(j)
+            sim.append((j,cosdis(va,vb)))
+        #print(sorted(sim,key = lambda x: x[1],reverse=True))
+        antonym_results = sorted(sim,key = lambda x: x[1],reverse=True)
+        return antonym_results[0][0]
+    
+    def distractor3():
+        from random_word import RandomWords
+        r = RandomWords()
+        d = r.get_random_word(hasDictionaryDef="true", includePartOfSpeech="noun,verb", minCorpusCount=1, maxCorpusCount=10, minDictionaryCount=1, maxDictionaryCount=10, minLength=5, maxLength=10)
+        return d
+    
+    # return [distractor1(word),get_bow(word),distractor3()]
+    return [distractor1(word),distractor3(),distractor3()]

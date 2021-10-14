@@ -42,9 +42,9 @@ def get_true_false(summarized_text):
     import benepar
     import spacy
     import torch
-
+    print('in get_true_false')
     benepar_parser = benepar.Parser("benepar_en3")
-    nlp = spacy.load('en')
+    nlp = spacy.load('en_core_web_lg')
 
     def preprocess(sentences):
         output = []
@@ -108,11 +108,13 @@ def get_true_false(summarized_text):
             phrases= []
             if last_verbphrase is not None:
                 verbphrase_string = get_termination_portion(sentence,last_verbphrase)
-                phrases.append(verbphrase_string)
+                if verbphrase_string is not None:
+                    phrases.append(verbphrase_string)
             if last_nounphrase is not None:
                 nounphrase_string = get_termination_portion(sentence,last_nounphrase)
-                phrases.append(nounphrase_string)
-
+                if nounphrase_string is not None:
+                    phrases.append(nounphrase_string)
+            print(phrases)
             longest_phrase =  sorted(phrases, key=len,reverse= True)
             if len(longest_phrase) == 2:
                 first_sent_len = len(longest_phrase[0].split())
@@ -203,7 +205,7 @@ def get_true_false(summarized_text):
         res.append((key_sentence,"True"))
         print('For loop',key_sentence,"True")
         false_sentences =[]
-        for partial_sent in partial_sentences:
+        for partial_sent in partial_sentences[:1]:
             false_sents = generate_sentences(partial_sent,key_sentence)
             print(false_sents)
             false_sentences.extend(false_sents)
