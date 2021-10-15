@@ -12,15 +12,15 @@ pdfminer.six
 gunicorn
 pydictionary
 flask-executor
-sentence_transformers
+# sentence_transformers
 numba
-spacy
-benepar
-summa
-git+https://github.com/boudinfl/pke.git
-flashtext
-inflect
-flask-executor
-waitress
-random_word
-wordhoard
+# spacy
+# benepar
+# summa
+# git+https://github.com/boudinfl/pke.git
+# flashtext
+# inflect
+# flask-executor
+# waitress
+# random_word
+# wordhoard
