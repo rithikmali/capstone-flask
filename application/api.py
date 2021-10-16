@@ -12,6 +12,7 @@ from application.getSummary import *
 from application.getKeywords import *
 from application.getQuestion import *
 from application.getDistractors import *
+from application.getMeanings import *
 
 @app.route("/")
 def home():
@@ -31,11 +32,11 @@ def get_text_tika(pdf_path):
 def parse_json(data):
     return json.loads(json_util.dumps(data))
 
-@app.route("/makequiz")
 def makequizjob():
     executor.submit(make_quiz)
     return 'Scheduled a job'
 
+@app.route("/makequiz")
 def make_quiz():
     # if request.method == 'POST':
     #     f = request.files['file']
@@ -43,7 +44,6 @@ def make_quiz():
     pdf_path = request.args.get('path')
     chapter = request.args.get('chapter')
     quizname = request.args.get('quizname')
-    no_of_questions = request.args.get('no_of_questions')
 
     #get text from pdf
     text = get_text_tika(pdf_path)
@@ -83,16 +83,21 @@ def make_quiz():
 
 
     #get meanings
-    distractors = keyword_distractor_list
-    # distractors = {}
-    # for distractor_list in keyword_distractor_list.values():
-    #     distractors[keyword] = get_meanings(summarized_text,distractor_list)
-
-    # print('got distractors with meanings')
+    # distractors = keyword_distractor_list
+    distractors = {}
+    for distractor_list in keyword_distractor_list.values():
+        list_of_meanings = get_meanings(summarized_text,distractor_list)[0]
+        ml = []
+        list_of_meanings_all = defaultdict(lambda: None)
+        list_of_meanings_all |= list_of_meanings
+        for d in distractor_list:
+            ml.append({'distractor':d,'meaning':list_of_meanings_all[d]})
+        distractors[distractor_list[0]] = ml
+    print('got distractors with meanings')
 
     # Get True/False questions
 
-    #combine everythin into a dictionary
+    # combine everythin into a dictionary
     quiz_db_val = {'quizname': quizname, 'questions':{}}
     index = 1
     questions=[]
@@ -125,7 +130,7 @@ def make_quiz():
 
     #insert into cards db
     quiz_card_db_val = {'chapter': chapter,'summarized_text':summarized_text,'quizname': quizname,
-                'no_of_questions': no_of_questions, 'pdf': 'pdf'}
+                'pdf': 'pdf'}
     mycol = db['quiz_cards']
     x = mycol.insert_one(quiz_card_db_val)
     print('inserted into cards db')
