@@ -1,12 +1,7 @@
 from flask import Flask, request
 import pymongo
-from dotenv import load_dotenv
 from datetime import timedelta
-from flask_executor import Executor
 
-import os
-
-load_dotenv()
 
 #connect to database
 # db_url = os.environ["MONGODB_URI"]
@@ -15,6 +10,5 @@ client = pymongo.MongoClient(db_url)
 db = client.capstone
 
 app = Flask(__name__)
-executor = Executor(app)
 
 from application.api import *
