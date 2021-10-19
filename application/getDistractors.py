@@ -152,4 +152,4 @@ def get_distractors_c(word):
         return d
     
     # return [distractor1(word),get_bow(word),distractor3()]
-    return [distractor1(word),distractor3(),distractor3()]
+    return [distractor1(word),distractor3()]

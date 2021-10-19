@@ -36,7 +36,10 @@ def get_meanings(summarized_text, distractor_list):
 
     def get_all_meanings(keywords):
       for i in keywords:
-        meanings.update({i:dict.meaning(i)})
+        try:
+            meanings.update({i:dict.meaning(i)})
+        except:
+            pass
     
     def clean_string(text):
         text = ''.join([word for word in text if word not in string.punctuation])

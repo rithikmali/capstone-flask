@@ -129,12 +129,11 @@ def get_true_false(summarized_text):
     sent_completion_dict = get_sentence_completions(filter_quotes_and_questions)
     print("Sentence completion dict", sent_completion_dict)
 
-    from transformers import GPT2LMHeadModel, GPT2Tokenizer
-    tokenizer = GPT2Tokenizer.from_pretrained("gpt2")
+    from transformers import pipeline, set_seed
+    generator = pipeline('text-generation', model='gpt2')
+    set_seed(42)
 
     # add the EOS token as PAD token to avoid warnings
-    model = GPT2LMHeadModel.from_pretrained("gpt2",pad_token_id=tokenizer.eos_token_id)
-    print('loaded model')
     
     from sentence_transformers import SentenceTransformer
     # Load the BERT model. Various models trained on Natural Language Inference (NLI) https://github.com/UKPLab/sentence-transformers/blob/master/docs/pretrained-models/nli-models.md and 
@@ -175,24 +174,34 @@ def get_true_false(summarized_text):
         
 
     def generate_sentences(partial_sentence,full_sentence):
-        input_ids = torch.tensor([tokenizer.encode(partial_sentence)])
-        maximum_length = len(partial_sentence.split())+80
+        # input_ids = torch.tensor([tokenizer.encode(partial_sentence)])
+        # maximum_length = len(partial_sentence.split())+80
 
         # Actiavte top_k sampling and top_p sampling with only from 90% most likely words
-        sample_outputs = model.generate(
-            input_ids, 
-            do_sample=True, 
-            max_length=maximum_length, 
-            top_p=0.90, # 0.85 
-            top_k=50,   #0.30
-            repetition_penalty  = 10.0,
-            num_return_sequences=10
-        )
-        generated_sentences=[]
-        for i, sample_output in enumerate(sample_outputs):
-            decoded_sentences = tokenizer.decode(sample_output, skip_special_tokens=True)
-            decoded_sentences_list = tokenize.sent_tokenize(decoded_sentences)
-            generated_sentences.append(decoded_sentences_list[0])
+        # sample_outputs = model.generate(
+        #     input_ids, 
+        #     do_sample=True, 
+        #     max_length=maximum_length, 
+        #     top_p=0.90, # 0.85 
+        #     top_k=50,   #0.30
+        #     repetition_penalty  = 10.0,
+        #     num_return_sequences=10
+        # )
+        generated_sentences=generator(partial_sentence, max_length=50, num_return_sequences=5)
+        generated_sentences = [i['generated_text'] for i in generated_sentences]
+        
+        # for i, sample_output in enumerate(sample_outputs):
+        #     decoded_sentences = tokenizer.decode(sample_output, skip_special_tokens=True)
+        #     decoded_sentences_list = tokenize.sent_tokenize(decoded_sentences)
+        #     generated_sentences.append(decoded_sentences_list[0])
+        # import requests
+        # r = requests.post(
+        #     "https://api.deepai.org/api/text-generator",
+        #     data={
+        #         'text': 'YOUR_TEXT_HERE',
+        #     },
+        #     headers={'api-key': 'quickstart-QUdJIGlzIGNvbWluZy4uLi4K'}
+        # )
             
         top_3_sentences = sort_by_similarity(full_sentence,generated_sentences)
         
@@ -211,6 +220,9 @@ def get_true_false(summarized_text):
             false_sentences.extend(false_sents)
         for i in false_sentences:
             res.append((i,'False'))
+        if index>3:
+            return res
+        index+=1
     return res
 
 if __name__ == "__main__":
