@@ -1,6 +1,0 @@
-punkt
-brown
-wordnet
-averaged_perceptron_tagger
-stopwords
-tagsets
