@@ -49,7 +49,7 @@ def deletequiz():
 
     mycol = db['quizzes']
     mycol.delete_one(myquery)
-    return 'Deleted '+quizname, 200
+    return 'Deleted '+ quizname, 200
 
 @app.route("/api/getquizcards")
 def get_quiz_cards():
@@ -79,3 +79,72 @@ def getquiz():
 
     else:
         return 'enter a valid string please'
+
+
+@app.route("/api/register", methods=['POST'])
+def register_student():
+    mycol = db['student']
+    r = dict(request.values)
+    r2 = dict(request.get_json())
+    r|=r2
+    if mycol.find_one({'name':r['name']}):
+        return 'Student is already registered', 400
+    mycol.insert_one(r)
+    return 'Student registered', 200 
+
+
+@app.route("/api/student", methods=['GET'])
+def get_student():
+    mycol = db['student']
+    r = dict(request.values)
+    r2 = dict(request.get_json())
+    r|=r2
+    if 'name' in r:
+        query = {'name': r['name']}
+        res = mycol.find_one(query)
+        if res:
+            return parse_json(res)
+        return 'No student found', 404
+    else:
+        res = mycol.find()
+        ret = {"students":[]}
+        for v in res:
+            ret['students'].append(parse_json(v))
+        return ret
+
+@app.route("/api/report", methods=['GET'])
+def get_report():
+    mycol = db['report']
+    r = dict(request.values)
+    r2 = dict(request.get_json())
+    r|=r2
+    if 'name' in r:
+        query = {'name': r['name']}
+        res = mycol.find_one(query)
+        if res:
+            return parse_json(res)
+        return 'No report found', 404
+    else:
+        return 'Enter student name', 400
+
+@app.route("/api/addreport", methods=['POST'])
+def add_report():
+    mycol = db['report']
+    r = dict(request.values)
+    r2 = dict(request.get_json())
+    r|=r2
+    query = {'name': r['name']}
+    res = mycol.find_one(query)
+    new = r['quizzes']
+    print(type(res))
+    if res:
+        report = res
+        report['quizzes'] += r['quizzes']
+        
+        newvalues = { "$set": { "quizzes": report['quizzes'] } }
+        mycol.update_one(query, newvalues)
+        return 'Updated', 200
+    else:
+        # report = {'name':r['name'] ,'quizzes': [new]}
+        mycol.insert_one(r)
+        return 'Inserted new report', 200
