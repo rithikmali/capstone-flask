@@ -195,11 +195,19 @@ def deletequiz():
 @app.route("/api/getquizcards")
 def get_quiz_cards():
     mycol = db['quiz_cards']
-    res = mycol.find()
-    r = {"quizcards":[]}
-    for i,v in enumerate(res):
-        r['quizcards'].append(parse_json(v))
-    return r
+    
+    if 'quizname' in request.values:
+        query = {'quizname': request.values['quizname']}
+        res = mycol.find(query)
+        for i in res:
+            return parse_json(i)
+        return 'No quiz found', 404
+    else:
+        res = mycol.find()
+        r = {"quizcards":[]}
+        for i,v in enumerate(res):
+            r['quizcards'].append(parse_json(v))
+        return r
 
 @app.route("/api/getquiz")
 def getquiz():
