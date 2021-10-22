@@ -85,8 +85,9 @@ def getquiz():
 def register_student():
     mycol = db['student']
     r = dict(request.values)
-    r2 = dict(request.get_json())
-    r|=r2
+    if request.is_json:
+        r2 = dict(request.get_json())
+        r|=r2
     if mycol.find_one({'name':r['name']}):
         return 'Student is already registered', 400
     mycol.insert_one(r)
@@ -97,8 +98,9 @@ def register_student():
 def get_student():
     mycol = db['student']
     r = dict(request.values)
-    r2 = dict(request.get_json())
-    r|=r2
+    if request.is_json:
+        r2 = dict(request.get_json())
+        r|=r2
     if 'name' in r:
         query = {'name': r['name']}
         res = mycol.find_one(query)
@@ -116,8 +118,9 @@ def get_student():
 def get_report():
     mycol = db['report']
     r = dict(request.values)
-    r2 = dict(request.get_json())
-    r|=r2
+    if request.is_json:
+        r2 = dict(request.get_json())
+        r|=r2
     if 'name' in r:
         query = {'name': r['name']}
         res = mycol.find_one(query)
@@ -131,8 +134,9 @@ def get_report():
 def add_report():
     mycol = db['report']
     r = dict(request.values)
-    r2 = dict(request.get_json())
-    r|=r2
+    if request.is_json:
+        r2 = dict(request.get_json())
+        r|=r2
     query = {'name': r['name']}
     res = mycol.find_one(query)
     new = r['quizzes']
