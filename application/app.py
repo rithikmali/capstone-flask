@@ -1,4 +1,5 @@
 from flask import Flask, request
+from flask_cors import CORS
 import pymongo
 from datetime import timedelta
 
@@ -10,5 +11,6 @@ client = pymongo.MongoClient(db_url)
 db = client.capstone
 
 app = Flask(__name__)
+CORS(app)
 
 from application.api import *
