@@ -150,14 +150,14 @@ def add_report():
     if res:
         report = res
         report['quizzes'] += r['quizzes']
-        # user = db['student'].find_one(r['name'])
-        # quizname = r['quizzes'][0]['quizname']
-        # if quizname in user['not_taken']:
-        #     user['not_taken'].remove(quizname)
-        # user['taken'].append(quizname)
+        user = db['student'].find_one(query)
+        quizname = r['quizzes'][0]['quizname']
+        if quizname in user['not_taken']:
+            user['not_taken'].remove(quizname)
+        user['taken'].append(quizname)
 
-        # newvalues = { "$set": user }
-        # db['student'].update_one(query,newvalues)
+        newvalues = { "$set": user }
+        db['student'].update_one(query,newvalues)
 
         newvalues = { "$set": { "quizzes": report['quizzes'] } }
         mycol.update_one(query, newvalues)
