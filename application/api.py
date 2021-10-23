@@ -125,7 +125,13 @@ def get_report():
         query = {'name': r['name']}
         res = mycol.find_one(query)
         if res:
-            return parse_json(res)
+            if 'quizname' not in res:
+                return parse_json(res)
+            
+            for i in res['quizzes']:
+                if i['quizname'] == r['quizname']:
+                    return parse_json(i)
+
         return 'No report found', 404
     else:
         return 'Enter student name', 400
@@ -140,7 +146,7 @@ def add_report():
     query = {'name': r['name']}
     res = mycol.find_one(query)
     new = r['quizzes']
-    print(type(res))
+
     if res:
         report = res
         report['quizzes'] += r['quizzes']
