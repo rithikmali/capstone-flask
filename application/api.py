@@ -125,7 +125,7 @@ def get_report():
         query = {'name': r['name']}
         res = mycol.find_one(query)
         if res:
-            if 'quizname' not in res:
+            if 'quizname' not in r:
                 return parse_json(res)
             
             for i in res['quizzes']:
@@ -150,7 +150,15 @@ def add_report():
     if res:
         report = res
         report['quizzes'] += r['quizzes']
-        
+        # user = db['student'].find_one(r['name'])
+        # quizname = r['quizzes'][0]['quizname']
+        # if quizname in user['not_taken']:
+        #     user['not_taken'].remove(quizname)
+        # user['taken'].append(quizname)
+
+        # newvalues = { "$set": user }
+        # db['student'].update_one(query,newvalues)
+
         newvalues = { "$set": { "quizzes": report['quizzes'] } }
         mycol.update_one(query, newvalues)
         return 'Updated', 200
