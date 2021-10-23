@@ -37,8 +37,8 @@ def get_summary_t5(text):
         text = text.strip().replace("\n"," ")
         text = "summarize: "+text
         # print (text)
-        max_len = 512
-        encoding = tokenizer.encode_plus(text,max_length=max_len, pad_to_max_length=False,truncation=True, return_tensors="pt").to(device)
+        max_len = 5000
+        encoding = tokenizer.encode_plus(text,max_length=max_len, pad_to_max_length=True,truncation=True, return_tensors="pt").to(device)
 
         input_ids, attention_mask = encoding["input_ids"], encoding["attention_mask"]
 
@@ -49,7 +49,7 @@ def get_summary_t5(text):
                                         num_return_sequences=2,
                                         no_repeat_ngram_size=0,
                                         min_length = 75,
-                                        max_length=1000)
+                                        max_length=5000)
 
 
         dec = [tokenizer.decode(ids,skip_special_tokens=True) for ids in outs]
