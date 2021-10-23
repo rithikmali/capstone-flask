@@ -75,7 +75,7 @@ def filtered_distractors(keyw, dl):
     filtered_dl.remove(keyw)
     return filtered_dl
 
-def get_bow(word):
+def get_bow1(word):
     import spacy
     import numpy as np
     from numba import jit
@@ -109,6 +109,22 @@ def get_bow(word):
 
     r = most_similar(word, topn=3)
     return r
+
+def get_bow2(word,topn=3):
+    import nltk
+    nltk.download('word2vec_sample')
+    #nltk.download('brown')
+    from nltk.data import find
+    import gensim
+
+    word2vec_sample = str(find('models/word2vec_sample/pruned.word2vec.txt'))
+    model = gensim.models.KeyedVectors.load_word2vec_format(word2vec_sample, binary=False)
+    result = model.most_similar(positive=['refraction'], topn = 5)
+    bow = []
+    for i in result:
+        bow.append(i[0])
+
+    return bow
 
 def get_distractors_c(word):
     def word2vec(word):
