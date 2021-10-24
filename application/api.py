@@ -83,7 +83,7 @@ def make_quiz(chapter,quizname, minutes,seconds,filename):
     print(summarized_text)
 
     #get keywords
-    keywords = get_keywords(text, summarized_text)[:4]
+    keywords = get_keywords(text, summarized_text)
     print('got keywords')
     print(keywords)
 
