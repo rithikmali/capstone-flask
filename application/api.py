@@ -17,20 +17,13 @@ from application.getKeywords import *
 from application.getQuestion import *
 from application.getDistractors import *
 from application.getMeanings import *
+from application.pdftotext import *
 
 @app.route("/api")
 def home():
     return {"Status": "Success"}, 200 
 
 # Write your API endpoints here
-
-def get_text_pdfminer(pdf_path):
-    text = extract_text(pdf_path)
-    return text
-
-def get_text_tika(pdf_path):
-    raw = parser.from_file(pdf_path)
-    return raw['content']
 
 @app.route('/api/upload',methods=['POST'])
 def check_form():
@@ -82,15 +75,15 @@ def make_quiz(chapter,quizname, minutes,seconds,filename):
     #get text from pdf
     text = get_text_tika(filename)
     # print(text)
-    
+    text = clean_string(text)
     #get summary
     # summarized_text = get_summary_t5(text)
     summarized_text = get_summary_summa(text,ratio=0.1)
     print('got summary')
-    # print(summarized_text)
+    print(summarized_text)
 
     #get keywords
-    keywords = get_keywords(text, summarized_text)
+    keywords = get_keywords(text, summarized_text)[:4]
     print('got keywords')
     print(keywords)
 
@@ -104,7 +97,7 @@ def make_quiz(chapter,quizname, minutes,seconds,filename):
     #get distractors
     keyword_distractor_list = defaultdict(list)
     for keyword in keyword_sentence_mapping:
-        d_bow = get_bow(keyword)
+        d_bow = get_bow2(keyword)
         c=0
         if d_bow:
             keyword_distractor_list[keyword] = [d_bow]
@@ -113,7 +106,8 @@ def make_quiz(chapter,quizname, minutes,seconds,filename):
         n_distractors = filtered_distractors(keyword,distractors)
         # cl = get_distractors_c(keyword)
         if len(n_distractors)>=3-c:
-            keyword_distractor_list[keyword] += [keyword]+n_distractors[0:3-c]
+            keyword_distractor_list[keyword] = [keyword]+keyword_distractor_list[keyword]+n_distractors[0:3-c]
+        print(keyword_distractor_list[keyword])
     print('got distractors')
 
 

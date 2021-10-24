@@ -112,19 +112,19 @@ def get_bow1(word):
 
 def get_bow2(word,topn=3):
     import nltk
-    nltk.download('word2vec_sample')
+    # nltk.download('word2vec_sample')
     #nltk.download('brown')
     from nltk.data import find
     import gensim
 
     word2vec_sample = str(find('models/word2vec_sample/pruned.word2vec.txt'))
     model = gensim.models.KeyedVectors.load_word2vec_format(word2vec_sample, binary=False)
-    result = model.most_similar(positive=['refraction'], topn = 5)
+    result = model.most_similar(positive=[word], topn = 5)
     bow = []
     for i in result:
         bow.append(i[0])
 
-    return bow
+    return bow[0]
 
 def get_distractors_c(word):
     def word2vec(word):

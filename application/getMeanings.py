@@ -78,9 +78,10 @@ def get_meanings(summarized_text, distractor_list):
     def get_word_meanings(imp_keywords):
         list_of_defs_brute=[]
 
-        for i in imp_keywords: 
-            if(meanings[i] != None):
-              list_of_defs_brute.append((get_meaning_brute(i,meanings[i])))
+        for i in imp_keywords:
+            print(i, imp_keywords)
+            if meanings[i]:
+                list_of_defs_brute.append((get_meaning_brute(i,meanings[i])))
 
         return list_of_defs_brute
 
