@@ -94,22 +94,16 @@ def make_quiz(chapter,quizname, minutes,seconds,filename):
     # res = get_true_false(summarized_text)
     # print('got true false questions')
 
-    #get distractors
-    keyword_distractor_list = defaultdict(list)
-    for keyword in keyword_sentence_mapping:
-        d_bow = get_bow2(keyword)
-        c=0
-        if d_bow:
-            keyword_distractor_list[keyword] = [d_bow]
-            c=1
-        distractors = get_distractors_conceptnet(keyword) #function to generate distractors form conceptnet.io
-        n_distractors = filtered_distractors(keyword,distractors)
-        # cl = get_distractors_c(keyword)
-        if len(n_distractors)>=3-c:
-            keyword_distractor_list[keyword] = [keyword]+keyword_distractor_list[keyword]+n_distractors[0:3-c]
-        print(keyword_distractor_list[keyword])
-    print('got distractors')
+    from Questgen import main
+    qg = main.QGen()
+    payload = {"input_text":summarized_text}
+    output = qg.predict_mcq(payload) 
 
+
+    #get distractors
+    keyword_distractor_list = {i['answer']:[i['answer']]+i['options'] for i in output['questions']}
+    questions_list = {i['answer']:i['question_statement'] for i in output['questions']}
+    keyword_distractor_list = defaultdict(list)
 
     #get meanings
     # distractors = keyword_distractor_list
@@ -133,13 +127,9 @@ def make_quiz(chapter,quizname, minutes,seconds,filename):
     questions=[]
     for each in keyword_distractor_list:
         question_db_val = {'question':"", 'distractors':{}, 'correct_answer':""}
-        try:
-            sentence = keyword_sentence_mapping[each][0]
-        except:
-            continue
-        pattern = re.compile(each, re.IGNORECASE)
-        output = pattern.sub( " _______ ", sentence)
-        question_db_val['question'] = output
+        
+        
+        question_db_val['question'] = questions_list[each]
         question_db_val['distractors'] = distractors[each]
         question_db_val['correct_answer'] = each
 
