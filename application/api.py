@@ -71,14 +71,19 @@ def make_quiz(chapter,quizname, minutes,seconds,filename):
     print(chapter, quizname, minutes, seconds)
     
     print(filename)
-
-    #get text from pdf
-    text = get_text_tika(filename)
-    # print(text)
-    text = clean_string(text)
+    text=''
+    extension = filename.split('.')[-1]
+    if extension == 'pdf':
+        #get text from pdf
+        text = get_text_tika(filename)
+        # print(text)
+        text = clean_string(text)
+    elif extension == 'txt':
+        with open(filename, 'r') as file:
+            text = file.read()
     #get summary
     # summarized_text = get_summary_t5(text)
-    summarized_text = get_summary_summa(text,ratio=0.1)
+    summarized_text = get_summary_summa(text,ratio=0.3)
     print('got summary')
     print(summarized_text)
 
@@ -90,6 +95,7 @@ def make_quiz(chapter,quizname, minutes,seconds,filename):
     #get questions
     keyword_sentence_mapping = get_sentences_for_keyword(keywords, summarized_text)
     print('got keyword sentence mapping')
+    print(keyword_sentence_mapping)
 
     # res = get_true_false(summarized_text)
     # print('got true false questions')
@@ -105,11 +111,11 @@ def make_quiz(chapter,quizname, minutes,seconds,filename):
         distractors = get_distractors_conceptnet(keyword) #function to generate distractors form conceptnet.io
         n_distractors = filtered_distractors(keyword,distractors)
         # cl = get_distractors_c(keyword)
-        if len(n_distractors)>=3-c:
-            keyword_distractor_list[keyword] = [keyword]+keyword_distractor_list[keyword]+n_distractors[0:3-c]
-        print(keyword_distractor_list[keyword])
+        if len(n_distractors)>=3:
+            dl = [keyword]+keyword_distractor_list[keyword]+n_distractors[0:3-c]
+            keyword_distractor_list[keyword] = dl
     print('got distractors')
-
+    print(keyword_distractor_list)
 
     #get meanings
     # distractors = keyword_distractor_list

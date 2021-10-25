@@ -24,7 +24,9 @@ def get_sentences_for_keyword(keywords, summarized_text):
     for sentence in sentences:
         keywords_found = keyword_processor.extract_keywords(sentence)
         for key in keywords_found:
-            keyword_sentences[key].append(sentence)
+            if not keyword_sentences[key]:
+                keyword_sentences[key].append(sentence)
+                break
 
     for key in keyword_sentences.keys():
         values = keyword_sentences[key]
