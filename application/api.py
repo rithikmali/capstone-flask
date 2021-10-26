@@ -165,4 +165,14 @@ def add_report():
     else:
         # report = {'name':r['name'] ,'quizzes': [new]}
         mycol.insert_one(r)
+        not_taken = []
+
+        res = db['quiz_cards'].find()
+        for i in res:
+            not_taken.append(i['quizname'])
+        quizname = r['quizzes'][0]['quizname']
+        not_taken.remove(quizname)
+        mycol = db['student']
+        a = {'name':r['name'], 'not_taken': not_taken, 'taken':[quizname]}
+        mycol.insert_one(a)
         return 'Inserted new report', 200
