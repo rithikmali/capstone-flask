@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+Questgen
+s2v_old
 wordhoard_error.yaml
 
 # C extensions
