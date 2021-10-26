@@ -5,6 +5,7 @@ __pycache__/
 
 wordhoard_error.yaml
 s2v*
+Questgen*
 # C extensions
 *.so
 
