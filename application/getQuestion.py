@@ -44,6 +44,7 @@ def get_true_false(summarized_text):
     import benepar
     import spacy
     import torch
+    import random
     print('in get_true_false')
     benepar_parser = benepar.Parser("benepar_en3")
     nlp = spacy.load('en_core_web_lg')
@@ -213,18 +214,17 @@ def get_true_false(summarized_text):
     res = []
     for key_sentence in sent_completion_dict:
         partial_sentences = sent_completion_dict[key_sentence]
-        res.append((key_sentence,"True"))
+        res.append([(key_sentence,"True")])
         print('For loop',key_sentence,"True")
         false_sentences =[]
         for partial_sent in partial_sentences[:1]:
             false_sents = generate_sentences(partial_sent,key_sentence)
             print(false_sents)
             false_sentences.extend(false_sents)
-        for i in false_sentences:
-            res.append((i,'False'))
-        if index>3:
-            return res
+        for i in false_sentences[:1]:
+            res[-1].append((i,'False'))
         index+=1
+    res = [random.choice(i) for i in random.sample(res,3)]
     return res
 
 if __name__ == "__main__":
