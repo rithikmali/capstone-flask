@@ -72,24 +72,32 @@ def make_quiz(chapter,quizname, minutes,seconds,filename):
     
     print(filename)
 
-    #get text from pdf
-    text = get_text_tika(filename)
-    # print(text)
-    text = clean_string(text)
+    text=''
+    extension = filename.split('.')[-1]
+    if extension == 'pdf':
+        #get text from pdf
+        text = get_text_tika(filename)
+        # print(text)
+        text = clean_string(text)
+    elif extension == 'txt':
+        with open(filename, 'r') as file:
+            text = file.read()
     #get summary
     # summarized_text = get_summary_t5(text)
-    summarized_text = get_summary_summa(text,ratio=0.1)
+    summarized_text = text
+    # summarized_text = get_summary_summa(text,ratio=0.1)
+    # summarized_text = get_summary_summa(text,ratio=0.1)
     print('got summary')
     print(summarized_text)
 
     #get keywords
-    keywords = get_keywords(text, summarized_text)[:4]
-    print('got keywords')
-    print(keywords)
+    # keywords = get_keywords(text, summarized_text)[:4]
+    # print('got keywords')
+    # print(keywords)
 
-    #get questions
-    keyword_sentence_mapping = get_sentences_for_keyword(keywords, summarized_text)
-    print('got keyword sentence mapping')
+    # #get questions
+    # keyword_sentence_mapping = get_sentences_for_keyword(keywords, summarized_text)
+    # print('got keyword sentence mapping')
 
     # res = get_true_false(summarized_text)
     # print('got true false questions')
@@ -103,7 +111,7 @@ def make_quiz(chapter,quizname, minutes,seconds,filename):
     #get distractors
     keyword_distractor_list = {i['answer']:[i['answer']]+i['options'] for i in output['questions']}
     questions_list = {i['answer']:i['question_statement'] for i in output['questions']}
-    keyword_distractor_list = defaultdict(list)
+    # keyword_distractor_list = defaultdict(list)
 
     #get meanings
     # distractors = keyword_distractor_list
@@ -112,7 +120,8 @@ def make_quiz(chapter,quizname, minutes,seconds,filename):
         list_of_meanings = get_meanings(summarized_text,distractor_list)[0]
         ml = []
         list_of_meanings_all = defaultdict(lambda: None)
-        list_of_meanings_all |= list_of_meanings
+        for k,v in list_of_meanings.items():
+            list_of_meanings_all[k] = v
         for d in distractor_list:
             ml.append({'distractor':d,'meaning':list_of_meanings_all[d]})
         random.shuffle(ml)
@@ -120,7 +129,9 @@ def make_quiz(chapter,quizname, minutes,seconds,filename):
     print('got distractors with meanings')
 
     # Get True/False questions
-
+    print(output)
+    print(keyword_distractor_list)
+    print(distractors)
     # combine everythin into a dictionary
     quiz_db_val = {'quizname': quizname, 'questions':{}}
     index = 1
