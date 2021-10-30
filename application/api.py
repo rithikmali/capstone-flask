@@ -83,7 +83,7 @@ def make_quiz(chapter,quizname, minutes,seconds,filename):
             text = file.read()
     #get summary
     # summarized_text = get_summary_t5(text)
-    summarized_text = get_summary_summa(text,ratio=0.3)
+    summarized_text = get_summary_summa(text,ratio=0.5)
     print('got summary')
     print(summarized_text)
 
@@ -245,7 +245,7 @@ def addtruefalse():
     # Add True/False questions to dictionary
     questions=quiz_db_val['questions']
     for i in res:
-        question_db_val = {'question':"Answer with True/False: \n"+i[0], 'distractors':["True","False",None,None], 'correct_answer':i[1]}
+        question_db_val = {'question':"Answer with True/False: \n"+i[0], 'distractors':[{"distractor":"True", 'meaning':None},{"distractor":"False", 'meaning':None}], 'correct_answer':i[1]}
         questions.append(question_db_val)
     
     mycol = db['quizzes']
