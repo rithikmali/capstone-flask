@@ -239,13 +239,16 @@ def addtruefalse():
         quiz_card_db_val = i
 
     summarized_text = quiz_card_db_val['summarized_text']
-    res = get_true_false(summarized_text)
+    # res = get_true_false(summarized_text)
+    res = generate_tf(summarized_text)
     print('got true false questions')
 
     # Add True/False questions to dictionary
     questions=quiz_db_val['questions']
     for i in res:
         question_db_val = {'question':"Answer with True/False: \n"+i[0], 'distractors':[{"distractor":"True", 'meaning':None},{"distractor":"False", 'meaning':None}], 'correct_answer':i[1]}
+        if i[1] == 'False':
+            question_db_val['distractors'][0]['meaning'] = i[2]
         questions.append(question_db_val)
     
     mycol = db['quizzes']
