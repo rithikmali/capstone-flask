@@ -150,6 +150,7 @@ def add_report():
     if res:
         report = res
         report['quizzes'] += r['quizzes']
+        report['total_score'] += r['quizzes'][0]['score']
         user = db['student'].find_one(query)
         quizname = r['quizzes'][0]['quizname']
         if quizname in user['not_taken']:
@@ -164,15 +165,19 @@ def add_report():
         return 'Updated', 200
     else:
         # report = {'name':r['name'] ,'quizzes': [new]}
-        mycol.insert_one(r)
         not_taken = []
-
+        all_max_scores = []
         res = db['quiz_cards'].find()
         for i in res:
+            quiz = db['quizzes'].find_one(i['quizname'])
+            all_max_scores.append(len(quiz['questions']))
             not_taken.append(i['quizname'])
         quizname = r['quizzes'][0]['quizname']
         not_taken.remove(quizname)
+        r['max_score'] = sum(all_max_scores)
+        r['total_score'] = r['quizzes'][0]['score']
+        mycol.insert_one(r)
         mycol = db['student']
-        a = {'name':r['name'], 'not_taken': not_taken, 'taken':[quizname]}
+        a = {'name':r['name'], 'not_taken': not_taken, 'taken':[quizname], 'max_score':sum(all_max_scores)}
         mycol.insert_one(a)
         return 'Inserted new report', 200
