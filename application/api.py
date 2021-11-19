@@ -169,7 +169,8 @@ def add_report():
         all_max_scores = []
         res = db['quiz_cards'].find()
         for i in res:
-            quiz = db['quizzes'].find_one(i['quizname'])
+            q = {'quizname': i['quizname']}
+            quiz = db['quizzes'].find_one(q)
             all_max_scores.append(len(quiz['questions']))
             not_taken.append(i['quizname'])
         quizname = r['quizzes'][0]['quizname']
