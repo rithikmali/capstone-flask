@@ -163,7 +163,8 @@ def add_report():
         user['total_score'] += r['quizzes'][0]['score']
         if quizname in user['not_taken']:
             user['not_taken'].remove(quizname)
-        user['taken'].append(quizname)
+        if quizname not in user['taken']:
+            user['taken'].append(quizname)
 
         newvalues = { "$set": user }
         db['student'].update_one(query,newvalues)
