@@ -149,8 +149,9 @@ def add_report():
 
     if res:
         report = res
+        quizname = r['quizzes'][0]['quizname']
         for i in range(len(report['quizzes'])):
-            if report['quizzes'][i]['quizname'] == r['quizname']:
+            if report['quizzes'][i]['quizname'] == quizname:
                 report['quizzes'][i] = r['quizzes'][0]
                 break
         else:
@@ -160,7 +161,6 @@ def add_report():
         
         user = db['student'].find_one(query)
         user['total_score'] += r['quizzes'][0]['score']
-        quizname = r['quizzes'][0]['quizname']
         if quizname in user['not_taken']:
             user['not_taken'].remove(quizname)
         user['taken'].append(quizname)
