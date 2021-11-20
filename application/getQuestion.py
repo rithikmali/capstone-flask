@@ -423,6 +423,43 @@ def generate_tf(summarized_text):
         index = index+1
     return final_sentences
 
+def get_huggingface_questions(sents):
+    from application.pipelines import pipeline
+    nlp = pipeline("question-generation", model="valhalla/t5-base-qg-hl")
+    # nlp = pipeline("question-generation", model="valhalla/t5-small-qg-hl")
+    new_qa = []
+    for i in sents:
+        print(i)
+        n = nlp(i)
+        print('\t',n)
+        new_qa+=n
+    # for i in sents:
+    #     try:
+    #         print(i)
+    #         n = nlp(i)
+    #         print('\t',n)
+    #         new_qa+=n
+    #     except:
+    #         continue
+    return new_qa
+
+def hfapi(sents):
+    import json
+    import requests
+    from application.pipelines import pipeline
+    API_TOKEN = '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'
+    API_URL = 'https://api-inference.huggingface.co/models/valhalla/t5-base-qg-hl'
+    headers = {"Authorization": f"Bearer {API_TOKEN}"}
+    # new_qa = []
+    
+    def query(payload):
+        data = json.dumps(payload)
+        response = requests.request("POST", API_URL, headers=headers, data=data)
+        return json.loads(response.content.decode("utf-8"))
+
+    data = query("The lowest temperature at which a substance catches fire is called its ignition temperature.")
+    
+    return data
 
 if __name__ == "__main__":
     text = "There is a lot of volcanic activity at divergent plate boundaries in the oceans. For example, many undersea volcanoes are found along the Mid-Atlantic Ridge. This is a divergent plate boundary that runs north-south through the middle of the Atlantic Ocean. As tectonic plates pull away from each other at a divergent plate boundary, they create deep fissures, or cracks, in the crust. Molten rock, called magma, erupts through these cracks onto Earth’s surface. At the surface, the molten rock is called lava. It cools and hardens, forming rock. Divergent plate boundaries also occur in the continental crust. Volcanoes form at these boundaries, but less often than in ocean crust. That’s because continental crust is thicker than oceanic crust. This makes it more difficult for molten rock to push up through the crust. Many volcanoes form along convergent plate boundaries where one tectonic plate is pulled down beneath another at a subduction zone. The leading edge of the plate melts as it is pulled into the mantle, forming magma that erupts as volcanoes. When a line of volcanoes forms along a subduction zone, they make up a volcanic arc. The edges of the Pacific plate are long subduction zones lined with volcanoes. This is why the Pacific rim is called the “Pacific Ring of Fire.”"

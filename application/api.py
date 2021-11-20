@@ -25,28 +25,6 @@ def home():
 
 # Write your API endpoints here
 
-@app.route('/api/upload',methods=['POST'])
-def check_form():
-    chapter = request.values.get('chapter')
-    quizname = request.values.get('quizname')
-    minutes = request.values.get('minutes')
-    seconds = request.values.get('seconds')
-    filename = ""
-    text=''
-    try:
-        pdf = request.files['file']
-        filename = secure_filename(pdf.filename)
-        pdf.save(filename)
-        text = get_text_pdfminer(filename)
-    except:
-        print('no pdf')
-    
-    quiz_card_db_val = {'chapter': chapter,'text':text,'quizname': quizname,
-                'pdf': 'pdf', 'time': {'minutes': minutes, 'seconds': seconds}}
-    mycol = db['pdfs']
-    x = mycol.insert_one(quiz_card_db_val)
-    print('inserted into pdf db')
-    return 'received form'
 
 def parse_json(data):
     return json.loads(json_util.dumps(data))
@@ -60,10 +38,10 @@ def makequizjob():
     pdf = request.files['file']
     filename = secure_filename(pdf.filename)
     pdf.save(filename)
-    executor.submit(make_quiz(chapter,quizname, minutes,seconds,filename))
+    executor.submit(make_quiz_huggingface(chapter,quizname, minutes,seconds,filename))
     return 'Successful',200
 
-def make_quiz(chapter,quizname, minutes,seconds,filename):
+def make_quiz_old(chapter,quizname, minutes,seconds,filename):
     # if request.method == 'POST':
     #     f = request.files['file']
     #     f.save(secure_filename(f.filename))
@@ -181,45 +159,38 @@ def make_quiz(chapter,quizname, minutes,seconds,filename):
 
     return parse_json(quiz_card_db_val)
 
-@app.route("/api/deletequiz", methods=['POST'])
-def deletequiz():
-    quizname = request.values.get('quizname')
-    mycol = db['quiz_cards']
-    myquery = {'quizname': quizname}
-    mycol.delete_one(myquery)
+def make_quiz_huggingface(chapter,quizname, minutes,seconds,filename):
+    text=''
+    extension = filename.split('.')[-1]
+    if extension == 'pdf':
+        #get text from pdf
+        text = get_text_tika(filename)
+        # print(text)
+        text = clean_string(text)
+    elif extension == 'txt':
+        with open(filename, 'r') as file:
+            text = file.read()
+    #get summary
+    # summarized_text = get_summary_t5(text)
+    summarized_text = get_summary_summa(text,ratio=0.5)
+    print('got summary')
+    # print(summarized_text)
 
-    mycol = db['quizzes']
-    mycol.delete_one(myquery)
-    return 'Deleted '+quizname, 200
+    #get keywords
+    keywords = get_keywords(text, summarized_text)
+    print('got keywords')
+    print(keywords)
 
-@app.route("/api/getquizcards")
-def get_quiz_cards():
-    mycol = db['quiz_cards']
-    
-    if 'quizname' in request.values:
-        query = {'quizname': request.values['quizname']}
-        res = mycol.find(query)
-        for i in res:
-            return parse_json(i)
-        return 'No quiz found', 404
-    else:
-        res = mycol.find()
-        r = {"quizcards":[]}
-        for i,v in enumerate(res):
-            r['quizcards'].append(parse_json(v))
-        return r
-
-@app.route("/api/getquiz")
-def getquiz():
-    mycol = db['quizzes']
-    if 'quizname' in request.args:
-        query = {'quizname':request.args.get('quizname')}
-        res = mycol.find(query)
-        for i in res:
-            return parse_json(i)
-
-    else:
-        return 'enter a valid string please'
+    #get questions
+    keyword_sentence_mapping = get_sentences_for_keyword(keywords, summarized_text)
+    print('got keyword sentence mapping')
+    # print(keyword_sentence_mapping)
+    sents = [i[0] for i in keyword_sentence_mapping.values()]
+    # qa = get_huggingface_questions(sents)
+    qa = hfapi(sents)
+    print('got questions')
+    print(qa)
+    return 'done',200
 
 @app.route("/api/addtruefalse")
 def addtruefalse():
