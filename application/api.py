@@ -149,18 +149,19 @@ def add_report():
 
     if res:
         report = res
+        user = db['student'].find_one(query)
         quizname = r['quizzes'][0]['quizname']
         for i in range(len(report['quizzes'])):
             if report['quizzes'][i]['quizname'] == quizname:
+                user['total_score'] += r['quizzes'][0]['score'] - report['quizzes'][i]['score']
                 report['quizzes'][i] = r['quizzes'][0]
                 break
         else:
             report['quizzes'] += r['quizzes']
+            user['total_score'] += r['quizzes'][0]['score']
         newvalues = { "$set": { "quizzes": report['quizzes'] } }
         mycol.update_one(query, newvalues)
         
-        user = db['student'].find_one(query)
-        user['total_score'] += r['quizzes'][0]['score']
         if quizname in user['not_taken']:
             user['not_taken'].remove(quizname)
         if quizname not in user['taken']:
@@ -182,7 +183,7 @@ def add_report():
             not_taken.append(i['quizname'])
         quizname = r['quizzes'][0]['quizname']
         not_taken.remove(quizname)
-        r['max_score'] = sum(all_max_scores)
+        # r['max_score'] = sum(all_max_scores)
         # r['total_score'] = r['quizzes'][0]['score']
         mycol.insert_one(r)
         mycol = db['student']
