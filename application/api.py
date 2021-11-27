@@ -122,7 +122,7 @@ def make_quiz_old(chapter,quizname, minutes,seconds,filename):
         except:
             continue
         pattern = re.compile(each, re.IGNORECASE)
-        output = pattern.sub( " _______ ", sentence)
+        output = pattern.sub( " _______ ", sentence, count=1)
         question_db_val['question'] = output
         question_db_val['distractors'] = distractors[each]
         question_db_val['correct_answer'] = each
