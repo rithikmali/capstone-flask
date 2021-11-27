@@ -190,3 +190,19 @@ def add_report():
         a = {'name':r['name'], 'not_taken': not_taken, 'taken':[quizname], 'total_score':r['quizzes'][0]['score'],'max_score':sum(all_max_scores)}
         mycol.insert_one(a)
         return 'Inserted new report', 200
+
+@app.route("/api/makequiz", methods=['POST'])
+def addquizcard():
+    chapter = request.values.get('chapter')
+    quizname = request.values.get('quizname')
+    minutes = int(request.values.get('minutes'))
+    seconds = int(request.values.get('seconds'))
+    pdf = request.files['file']
+    text = pdf.read()
+    
+    quiz_card_db_val = {'chapter': chapter,'quizname': quizname,
+                    'pdf': 'abc','text': text, 'time': {'minutes': minutes, 'seconds': seconds}}
+    mycol = db['quiz_cards']
+    x = mycol.insert_one(quiz_card_db_val)
+    print('inserted into cards db')
+    return 'Successful',200
