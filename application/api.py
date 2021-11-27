@@ -197,8 +197,9 @@ def addquizcard():
     quizname = request.values.get('quizname')
     minutes = int(request.values.get('minutes'))
     seconds = int(request.values.get('seconds'))
-    pdf = request.files['file']
-    text = pdf.read()
+    # pdf = request.files['file']
+    # text = pdf.read()
+    text = request.values.get('file')
     
     quiz_card_db_val = {'chapter': chapter,'quizname': quizname,
                     'pdf': 'abc','text': text, 'time': {'minutes': minutes, 'seconds': seconds}}
