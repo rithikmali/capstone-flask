@@ -424,23 +424,23 @@ def generate_tf(summarized_text):
     return final_sentences
 
 def get_huggingface_questions(sents):
+        
+    # nlp = qgpipeline("question-generation", model="valhalla/t5-base-qg-hl")
     from application.pipelines import pipeline
     nlp = pipeline("question-generation", model="valhalla/t5-base-qg-hl")
-    # nlp = pipeline("question-generation", model="valhalla/t5-small-qg-hl")
     new_qa = []
     for i in sents:
-        print(i)
-        n = nlp(i)
-        print('\t',n)
-        new_qa+=n
+        try:
+            n = nlp(i)
+            print('\t',n)
+            new_qa+=n
+        except:
+            print("Error in processing sentence:")
+            continue
     # for i in sents:
-    #     try:
-    #         print(i)
-    #         n = nlp(i)
-    #         print('\t',n)
-    #         new_qa+=n
-    #     except:
-    #         continue
+    #     n = nlp(i)
+    #     print('\t',n)
+    #     new_qa+=n
     return new_qa
 
 def hfapi(sents):

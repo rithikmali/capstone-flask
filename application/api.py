@@ -171,8 +171,8 @@ def make_quiz_huggingface(chapter,quizname, minutes,seconds,filename):
         with open(filename, 'r') as file:
             text = file.read()
     #get summary
-    # summarized_text = get_summary_t5(text)
-    summarized_text = get_summary_summa(text,ratio=0.5)
+    summarized_text = get_summary_t5(text)
+    # summarized_text = get_summary_summa(text,ratio=0.5)
     print('got summary')
     # print(summarized_text)
 
@@ -185,12 +185,65 @@ def make_quiz_huggingface(chapter,quizname, minutes,seconds,filename):
     keyword_sentence_mapping = get_sentences_for_keyword(keywords, summarized_text)
     print('got keyword sentence mapping')
     # print(keyword_sentence_mapping)
-    sents = [i[0] for i in keyword_sentence_mapping.values()]
+    sents = [i[0] for i in keyword_sentence_mapping.values() if i]
     # qa = get_huggingface_questions(sents)
-    qa = hfapi(sents)
+    qa = get_huggingface_questions(sents)
     print('got questions')
     print(qa)
-    return 'done',200
+    keyword_qa = {}
+    keyword_distractor_list = defaultdict(list)
+    for i in qa:
+        keyword = i['answer']
+        d_bow = get_bow2(keyword)
+        c=0
+        if d_bow:
+            keyword_distractor_list[keyword] = [d_bow]
+            c=1
+        distractors = get_distractors_conceptnet(keyword) #function to generate distractors form conceptnet.io
+        n_distractors = filtered_distractors(keyword,distractors) 
+        # cl = get_distractors_c(keyword)
+        if len(n_distractors)>=3:
+            dl = [keyword]+keyword_distractor_list[keyword]+n_distractors[0:3-c]
+            keyword_distractor_list[keyword] = dl
+            keyword_qa[keyword] = i
+    print('got distractors')
+    print(keyword_distractor_list)
+    distractors = {}
+    for keyword,distractor_list in keyword_distractor_list.items():
+        list_of_meanings = get_meanings(summarized_text,distractor_list)[0]
+        ml = []
+        list_of_meanings_all = defaultdict(lambda: None)
+        list_of_meanings_all.update(list_of_meanings)
+        for d in distractor_list:
+            ml.append({'distractor':d,'meaning':list_of_meanings_all[d]})
+        random.shuffle(ml)
+        distractors[keyword] = ml
+    print('got distractors with meanings')
+
+    quiz_db_val = {'quizname': quizname, 'questions':{}}
+    index = 1
+    questions=[]
+    for each in keyword_distractor_list:
+        question_db_val = {'question':"", 'distractors':{}, 'correct_answer':""}
+        question_db_val['question'] = keyword_qa[each]['question']
+        question_db_val['distractors'] = distractors[each]
+        question_db_val['correct_answer'] = each
+        questions.append(question_db_val)
+        index += 1
+    quiz_db_val['questions'] = questions
+    quiz_card_db_val = {'chapter': chapter,'summarized_text':summarized_text,'quizname': quizname, 'filename':filename,
+                'time': {'minutes': minutes, 'seconds': seconds}}
+    print(quiz_card_db_val)
+    mycol = db['quiz_cards']
+    x = mycol.insert_one(quiz_card_db_val)
+    print('inserted into cards db')
+
+    
+    mycol = db['quizzes']
+    x = mycol.insert_one(quiz_db_val)
+    print('inserted into quizzes')
+
+    return parse_json(quiz_card_db_val)
 
 @app.route("/api/addtruefalse")
 def addtruefalse():
