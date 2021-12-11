@@ -199,14 +199,14 @@ def add_report():
 
 @app.route("/api/login", methods=['POST'])
 def login_student():
-    mycol = db['student']
+    
     r = dict(request.values)
     if request.is_json:
         r2 = dict(request.get_json())
         r.update(r2)
     if 'name' in r:
         query = {'name': r['name']}
-        res = mycol.find_one(query)
+        res = db.student.find_one(query)
         if res:
             return 'Logged in', 200
         else:
@@ -219,10 +219,9 @@ def login_student():
                 quiz = db['quizzes'].find_one(q)
                 all_max_scores.append(len(quiz['questions']))
                 not_taken.append(i['quizname'])
-            mycol.insert_one(r)
-            mycol = db['student']
+            
             a = {'name':r['name'], 'not_taken': not_taken, 'taken':[], 'total_score':0, 'max_score':sum(all_max_scores)}
-            mycol.insert_one(a)
+            db.student.insert_one(a)
             return 'Registered new sudent', 200
 
     else:
