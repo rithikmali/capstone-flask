@@ -180,6 +180,11 @@ def add_report():
     else:
         # report = {'name':r['name'] ,'quizzes': [new]}
         db.report.insert_one(r)
+        student = db['student'].find_one(query)
+        student['total_score'] += r['quizzes'][0]['score']
+        student['not_taken'].remove(r['quizzes'][0]['quizname'])
+        newvalues = { "$set": student }
+        db.student.update_one(query, newvalues)
         # not_taken = []
         # all_max_scores = []
         # res = db['quiz_cards'].find()
