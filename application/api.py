@@ -159,11 +159,17 @@ def add_report():
         else:
             report['quizzes'] += r['quizzes']
             user['total_score'] += r['quizzes'][0]['score']
-        newvalues = { "$set": { "quizzes": report['quizzes'] } }
+            if quizname not in user['not_taken']:
+                q = {'quizname': i['quizname']}
+                quiz = db['quizzes'].find_one(q)
+                user['max_score']+=len(quiz['questions'])
+        newvalues = { "$set": report }
         db.report.update_one(query, newvalues)
         
         if quizname in user['not_taken']:
             user['not_taken'].remove(quizname)
+            
+            
         if quizname not in user['taken']:
             user['taken'].append(quizname)
 
