@@ -171,7 +171,8 @@ def make_quiz_huggingface(chapter,quizname, minutes,seconds,filename):
         with open(filename, 'r') as file:
             text = file.read()
     #get summary
-    summarized_text = get_summary_t5(text)
+    # summarized_text = get_summary_t5(text)
+    summarized_text = text
     # summarized_text = get_summary_summa(text,ratio=0.5)
     print('got summary')
     # print(summarized_text)
@@ -210,7 +211,10 @@ def make_quiz_huggingface(chapter,quizname, minutes,seconds,filename):
     print(keyword_distractor_list)
     distractors = {}
     for keyword,distractor_list in keyword_distractor_list.items():
-        list_of_meanings = get_meanings(summarized_text,distractor_list)[0]
+        try:
+            list_of_meanings = get_meanings(summarized_text,distractor_list)[0]
+        except:
+            list_of_meanings = {}
         ml = []
         list_of_meanings_all = defaultdict(lambda: None)
         list_of_meanings_all.update(list_of_meanings)
@@ -230,6 +234,7 @@ def make_quiz_huggingface(chapter,quizname, minutes,seconds,filename):
         question_db_val['correct_answer'] = each
         questions.append(question_db_val)
         index += 1
+    n_questions = len(questions)
     quiz_db_val['questions'] = questions
     quiz_card_db_val = {'chapter': chapter,'summarized_text':summarized_text,'quizname': quizname, 'filename':filename,
                 'time': {'minutes': minutes, 'seconds': seconds}}
@@ -238,12 +243,23 @@ def make_quiz_huggingface(chapter,quizname, minutes,seconds,filename):
     x = mycol.insert_one(quiz_card_db_val)
     print('inserted into cards db')
 
-    
     mycol = db['quizzes']
     x = mycol.insert_one(quiz_db_val)
     print('inserted into quizzes')
 
+    # update_not taken list of students
+    update_all_not_taken(quizname, n_questions)
+
     return parse_json(quiz_card_db_val)
+
+def update_all_not_taken(quizname, n_questions):
+    res = db.student.find()
+    for each in res:
+        query = {'name': each['name']}
+        each['not_taken'].append(quizname)
+        each['max_score']+=n_questions
+        newvalues = { "$set": each }
+        db.student.update_one(query, newvalues)
 
 @app.route("/api/addtruefalse")
 def addtruefalse():
