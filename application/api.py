@@ -144,11 +144,11 @@ def add_report():
         r2 = dict(request.get_json())
         r|=r2
     query = {'name': r['name']}
-    res = mycol.find_one(query)
+    report = db.report.find_one(query)
     new = r['quizzes']
 
-    if res:
-        report = res
+    if report:
+        # report = res
         user = db['student'].find_one(query)
         quizname = r['quizzes'][0]['quizname']
         for i in range(len(report['quizzes'])):
@@ -160,7 +160,7 @@ def add_report():
             report['quizzes'] += r['quizzes']
             user['total_score'] += r['quizzes'][0]['score']
         newvalues = { "$set": { "quizzes": report['quizzes'] } }
-        mycol.update_one(query, newvalues)
+        db.report.update_one(query, newvalues)
         
         if quizname in user['not_taken']:
             user['not_taken'].remove(quizname)
@@ -173,23 +173,54 @@ def add_report():
         return 'Updated', 200
     else:
         # report = {'name':r['name'] ,'quizzes': [new]}
-        not_taken = []
-        all_max_scores = []
-        res = db['quiz_cards'].find()
-        for i in res:
-            q = {'quizname': i['quizname']}
-            quiz = db['quizzes'].find_one(q)
-            all_max_scores.append(len(quiz['questions']))
-            not_taken.append(i['quizname'])
-        quizname = r['quizzes'][0]['quizname']
-        not_taken.remove(quizname)
-        # r['max_score'] = sum(all_max_scores)
-        # r['total_score'] = r['quizzes'][0]['score']
-        mycol.insert_one(r)
-        mycol = db['student']
-        a = {'name':r['name'], 'not_taken': not_taken, 'taken':[quizname], 'total_score':r['quizzes'][0]['score'],'max_score':sum(all_max_scores)}
-        mycol.insert_one(a)
+        db.report.insert_one(r)
+        # not_taken = []
+        # all_max_scores = []
+        # res = db['quiz_cards'].find()
+        # for i in res:
+        #     q = {'quizname': i['quizname']}
+        #     quiz = db['quizzes'].find_one(q)
+        #     all_max_scores.append(len(quiz['questions']))
+        #     not_taken.append(i['quizname'])
+        # quizname = r['quizzes'][0]['quizname']
+        # not_taken.remove(quizname)
+        # # r['max_score'] = sum(all_max_scores)
+        # # r['total_score'] = r['quizzes'][0]['score']
+        # # mycol = db['student']
+        # a = {'name':r['name'], 'not_taken': not_taken, 'taken':[quizname], 'total_score':r['quizzes'][0]['score'],'max_score':sum(all_max_scores)}
+        # db.student.insert_one(a)
         return 'Inserted new report', 200
+
+@app.route("/api/login", methods=['POST'])
+def login_student():
+    mycol = db['student']
+    r = dict(request.values)
+    if request.is_json:
+        r2 = dict(request.get_json())
+        r.update(r2)
+    if 'name' in r:
+        query = {'name': r['name']}
+        res = mycol.find_one(query)
+        if res:
+            return 'Logged in', 200
+        else:
+            # create new student record
+            not_taken = []
+            all_max_scores = []
+            res = db['quiz_cards'].find()
+            for i in res:
+                q = {'quizname': i['quizname']}
+                quiz = db['quizzes'].find_one(q)
+                all_max_scores.append(len(quiz['questions']))
+                not_taken.append(i['quizname'])
+            mycol.insert_one(r)
+            mycol = db['student']
+            a = {'name':r['name'], 'not_taken': not_taken, 'taken':[], 'total_score':0, 'max_score':sum(all_max_scores)}
+            mycol.insert_one(a)
+            return 'Registered new sudent', 200
+
+    else:
+        return 'Enter student name and password', 400
 
 @app.route("/api/makequiz", methods=['POST'])
 def addquizcard():
