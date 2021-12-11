@@ -183,6 +183,7 @@ def add_report():
         student = db['student'].find_one(query)
         student['total_score'] += r['quizzes'][0]['score']
         student['not_taken'].remove(r['quizzes'][0]['quizname'])
+        student['taken'].append(r['quizzes'][0]['quizname'])
         newvalues = { "$set": student }
         db.student.update_one(query, newvalues)
         # not_taken = []
