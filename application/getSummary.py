@@ -48,7 +48,7 @@ def get_summary_t5(text):
                                         num_beams=3,
                                         num_return_sequences=2,
                                         no_repeat_ngram_size=0,
-                                        min_length = 75,
+                                        min_length = 300,
                                         max_length=5000)
 
 

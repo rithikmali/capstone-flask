@@ -218,7 +218,7 @@ def make_quiz_huggingface(chapter,quizname, minutes,seconds,filename):
         ml = []
         list_of_meanings_all = defaultdict(lambda: None)
         list_of_meanings_all.update(list_of_meanings)
-        for d in distractor_list:
+        for d in distractor_list[:4]:
             ml.append({'distractor':d,'meaning':list_of_meanings_all[d]})
         random.shuffle(ml)
         distractors[keyword] = ml
@@ -227,7 +227,7 @@ def make_quiz_huggingface(chapter,quizname, minutes,seconds,filename):
     quiz_db_val = {'quizname': quizname, 'questions':{}}
     index = 1
     questions=[]
-    for each in keyword_distractor_list:
+    for each in keyword_qa:
         question_db_val = {'question':"", 'distractors':{}, 'correct_answer':""}
         question_db_val['question'] = keyword_qa[each]['question']
         question_db_val['distractors'] = distractors[each]
