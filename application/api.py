@@ -41,57 +41,25 @@ def makequizjob():
     executor.submit(make_quiz_huggingface(chapter,quizname, minutes,seconds,filename))
     return 'Successful',200
 
-def make_quiz_old(chapter,quizname, minutes,seconds,filename):
-    # if request.method == 'POST':
-    #     f = request.files['file']
-    #     f.save(secure_filename(f.filename))
-    # pdf = request.files['file']
-    print(chapter, quizname, minutes, seconds)
-    
-    print(filename)
-    text=''
-    extension = filename.split('.')[-1]
-    if extension == 'pdf':
-        #get text from pdf
-        text = get_text_tika(filename)
-        # print(text)
-        text = clean_string(text)
-    elif extension == 'txt':
-        with open(filename, 'r') as file:
-            text = file.read()
-    #get summary
-    # summarized_text = get_summary_t5(text)
-    summarized_text = get_summary_summa(text,ratio=0.5)
-    print('got summary')
-    print(summarized_text)
-
-    #get keywords
-    keywords = get_keywords(text, summarized_text)
-    print('got keywords')
-    print(keywords)
-
-    #get questions
-    keyword_sentence_mapping = get_sentences_for_keyword(keywords, summarized_text)
-    print('got keyword sentence mapping')
-    print(keyword_sentence_mapping)
-
-    # res = get_true_false(summarized_text)
-    # print('got true false questions')
+def make_quiz_old(chapter,quizname, minutes,seconds,filename, summarized_text, keyword_sentence_mapping):
 
     #get distractors
+    count = 0
     keyword_distractor_list = defaultdict(list)
     for keyword in keyword_sentence_mapping:
         d_bow = get_bow2(keyword)
-        c=0
-        if d_bow:
-            keyword_distractor_list[keyword] = [d_bow]
-            c=1
+        c = 1 if d_bow else 0
         distractors = get_distractors_conceptnet(keyword) #function to generate distractors form conceptnet.io
         n_distractors = filtered_distractors(keyword,distractors)
         # cl = get_distractors_c(keyword)
-        if len(n_distractors)>=3:
+        if len(n_distractors)+c>=3:
+            if d_bow:
+                keyword_distractor_list[keyword] = [d_bow]
             dl = [keyword]+keyword_distractor_list[keyword]+n_distractors[0:3-c]
             keyword_distractor_list[keyword] = dl
+            count+=1
+            if count>5:
+                break
     print('got distractors')
     print(keyword_distractor_list)
 
@@ -102,14 +70,13 @@ def make_quiz_old(chapter,quizname, minutes,seconds,filename):
         list_of_meanings = get_meanings(summarized_text,distractor_list)[0]
         ml = []
         list_of_meanings_all = defaultdict(lambda: None)
-        list_of_meanings_all |= list_of_meanings
+        list_of_meanings_all.update(list_of_meanings)
         for d in distractor_list:
             ml.append({'distractor':d,'meaning':list_of_meanings_all[d]})
         random.shuffle(ml)
         distractors[keyword] = ml
     print('got distractors with meanings')
 
-    # Get True/False questions
 
     # combine everythin into a dictionary
     quiz_db_val = {'quizname': quizname, 'questions':{}}
@@ -129,35 +96,8 @@ def make_quiz_old(chapter,quizname, minutes,seconds,filename):
 
         questions.append(question_db_val)
         index += 1
-    quiz_db_val['questions'] = questions
+    return questions
 
-    # Add True/False questions to dictionary
-    # questions=[]
-    # for i in res:
-    #     question_db_val = {'question':"Answer with True/False: \n"+i[0], 'distractors':["True","False",None,None], 'correct_answer':i[1]}
-    #     questions.append(question_db_val)
-    #     index += 1
-    # quiz_db_val['questions'] = questions
-
-    # print('got quiz db val')
-
-
-    #insert into cards db
-    # quiz_card_db_val = {'chapter': chapter,'summarized_text':summarized_text,'quizname': quizname,
-    #             'pdf': pdf, 'time': {'minutes': minutes, 'seconds': seconds}}
-    quiz_card_db_val = {'chapter': chapter,'summarized_text':summarized_text,'quizname': quizname,
-                'pdf': filename, 'time': {'minutes': minutes, 'seconds': seconds}}
-    mycol = db['quiz_cards']
-    x = mycol.insert_one(quiz_card_db_val)
-    print('inserted into cards db')
-
-    #inserting into questions db
-        # TODO
-    mycol = db['quizzes']
-    x = mycol.insert_one(quiz_db_val)
-    print('inserted into quizzes')
-
-    return parse_json(quiz_card_db_val)
 
 def make_quiz_huggingface(chapter,quizname, minutes,seconds,filename):
     text=''
@@ -225,7 +165,7 @@ def make_quiz_huggingface(chapter,quizname, minutes,seconds,filename):
     print('got distractors with meanings')
 
     quiz_db_val = {'quizname': quizname, 'questions':{}}
-    index = 1
+    index = 0
     questions=[]
     for each in keyword_qa:
         question_db_val = {'question':"", 'distractors':{}, 'correct_answer':""}
@@ -234,6 +174,10 @@ def make_quiz_huggingface(chapter,quizname, minutes,seconds,filename):
         question_db_val['correct_answer'] = each
         questions.append(question_db_val)
         index += 1
+        if index>5:
+            break
+    
+    questions += make_quiz_old(chapter, quizname, minutes, seconds, filename, summarized_text, keyword_sentence_mapping)
     n_questions = len(questions)
     quiz_db_val['questions'] = questions
     quiz_card_db_val = {'chapter': chapter,'summarized_text':summarized_text,'quizname': quizname, 'filename':filename,
